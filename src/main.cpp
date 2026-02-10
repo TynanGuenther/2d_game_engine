@@ -3,6 +3,7 @@
 #include <iostream>
 
 int main() {
+    double lastTime = glfwGetTime();
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW\n";
         return 1;
@@ -27,6 +28,14 @@ int main() {
     }
 
     while (!glfwWindowShouldClose(window)) {
+	double currentTime = glfwGetTime();
+	double deltaTime = currentTime - lastTime;
+	std::cout << "dt: " << deltaTime << "\n";
+	lastTime = currentTime;
+	
+	//TODO: UPDATE LOGIC
+	
+	//Render
         glClearColor(0.1f, 0.1f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
