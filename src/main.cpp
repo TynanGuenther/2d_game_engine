@@ -6,8 +6,10 @@ const char* vertexShaderSource = R"(
 #version 330 core
 layout (location = 0) in vec2 aPos;
 
+uniform vec2 offset;
+
 void main() {
-    gl_Position = vec4(aPos, 0.0, 1.0);
+    gl_Position = vec4(aPos + offset, 0.0, 1.0);
 }
 )";
 
@@ -29,6 +31,10 @@ float vertices[] = {
     -0.5f,  0.5f,
     -0.5f, -0.5f
 };
+
+float posX = 0.0f;
+float posY = 0.0f;
+float speed = 1.0f;
 
 
 int main() {
@@ -97,12 +103,23 @@ int main() {
 	lastTime = currentTime;
 	
 	//TODO: UPDATE LOGIC
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+	    posX -= speed * deltaTime;
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+	    posX += speed * deltaTime;
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+	    posY += speed * deltaTime;
+	if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+	    posY -= speed * deltaTime;
+
 	
 	//Render
         glClearColor(0.1f, 0.1f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 	
 	glUseProgram(shaderProgram);
+	int offsetLoc = glGetUniformLocation(shaderProgram, "offset");
+	glUniform2f(offsetLoc, posX, posY);
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
