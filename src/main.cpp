@@ -1,6 +1,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <algorithm>
 
 const char* vertexShaderSource = R"(
 #version 330 core
@@ -36,6 +37,36 @@ float posX = 0.0f;
 float posY = 0.0f;
 float speed = 1.0f;
 
+void processInput(GLFWwindow* window, double deltaTime) {
+	//Move Rectangle
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+	    posX -= speed * deltaTime;
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+	    posX += speed * deltaTime;
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+	    posY += speed * deltaTime;
+	if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+	    posY -= speed * deltaTime;
+}
+
+void update() {
+	float halfSize = 0.5f;
+	posX = std::clamp(posX, -1.0f + halfSize, 1.0f - halfSize);
+	posY = std::clamp(posY, -1.0f + halfSize, 1.0f - halfSize);
+
+}
+
+void render(unsigned int shaderProgram, unsigned int VAO) {
+        glClearColor(0.1f, 0.1f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+	
+	glUseProgram(shaderProgram);
+	int offsetLoc = glGetUniformLocation(shaderProgram, "offset");
+	glUniform2f(offsetLoc, posX, posY);
+	glBindVertexArray(VAO);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+}
+
 
 int main() {
     double lastTime = glfwGetTime();
@@ -56,6 +87,9 @@ int main() {
     }
 
     glfwMakeContextCurrent(window);
+
+    //enable VSync
+    glfwSwapInterval(1);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 	std::cerr << "Failed to initialize GLAD\n";
@@ -99,30 +133,13 @@ int main() {
     while (!glfwWindowShouldClose(window)) {
 	double currentTime = glfwGetTime();
 	double deltaTime = currentTime - lastTime;
-	std::cout << "dt: " << deltaTime << "\n";
 	lastTime = currentTime;
-	
-	//TODO: UPDATE LOGIC
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-	    posX -= speed * deltaTime;
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-	    posX += speed * deltaTime;
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-	    posY += speed * deltaTime;
-	if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-	    posY -= speed * deltaTime;
 
-	
-	//Render
-        glClearColor(0.1f, 0.1f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-	
-	glUseProgram(shaderProgram);
-	int offsetLoc = glGetUniformLocation(shaderProgram, "offset");
-	glUniform2f(offsetLoc, posX, posY);
-	glBindVertexArray(VAO);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	processInput(window, deltaTime);
 
+	update();
+
+	render(shaderProgram, VAO);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
