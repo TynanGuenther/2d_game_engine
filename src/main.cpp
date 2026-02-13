@@ -8,9 +8,12 @@ const char* vertexShaderSource = R"(
 layout (location = 0) in vec2 aPos;
 
 uniform vec2 offset;
+uniform mat4 projection;
+
 
 void main() {
-    gl_Position = vec4(aPos + offset, 0.0, 1.0);
+    vec2 worldPos = aPos + offset;
+    gl_Position = projection * vec4(worldPos, 0.0, 1.0);
 }
 )";
 
@@ -24,36 +27,67 @@ void main() {
 )";
 float vertices[] = {
     // two triangles forming a rectangle
-    -0.5f, -0.5f,
-     0.5f, -0.5f,
-     0.5f,  0.5f,
+     0.0f,  0.0f,
+     50.0f, 0.0f,
+     50.0f, 50.0f,
 
-     0.5f,  0.5f,
-    -0.5f,  0.5f,
-    -0.5f, -0.5f
+     0.0f,  0.0f,
+     50.0f, 50.0f,
+     0.0f,  50.0f
 };
 
 float posX = 0.0f;
 float posY = 0.0f;
-float speed = 1.0f;
+float velocityX = 0.0f;
+float velocityY = 0.0f;
+float speed = 300.0f;
 
-void processInput(GLFWwindow* window, double deltaTime) {
-	//Move Rectangle
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-	    posX -= speed * deltaTime;
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-	    posX += speed * deltaTime;
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-	    posY += speed * deltaTime;
-	if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-	    posY -= speed * deltaTime;
+
+void createOrtho(float left, float right,
+                 float bottom, float top,
+                 float* matrix)
+{
+    matrix[0] =  2.0f / (right - left);
+    matrix[1] =  0.0f;
+    matrix[2] =  0.0f;
+    matrix[3] =  0.0f;
+
+    matrix[4] =  0.0f;
+    matrix[5] =  2.0f / (top - bottom);
+    matrix[6] =  0.0f;
+    matrix[7] =  0.0f;
+
+    matrix[8] =  0.0f;
+    matrix[9] =  0.0f;
+    matrix[10] = -1.0f;
+    matrix[11] =  0.0f;
+
+    matrix[12] = -(right + left) / (right - left);
+    matrix[13] = -(top + bottom) / (top - bottom);
+    matrix[14] =  0.0f;
+    matrix[15] =  1.0f;
 }
 
-void update() {
-	float halfSize = 0.5f;
-	posX = std::clamp(posX, -1.0f + halfSize, 1.0f - halfSize);
-	posY = std::clamp(posY, -1.0f + halfSize, 1.0f - halfSize);
 
+void processInput(GLFWwindow* window) {
+    velocityX = 0.0f;
+    velocityY = 0.0f;
+    //Move Rectangle
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        velocityX = -speed;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        velocityX = speed;
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        velocityY = speed;
+    if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+	    velocityY = -speed;
+}
+
+void update(double deltaTime) {
+    posX += velocityX * deltaTime;
+    posY += velocityY * deltaTime;
+    posX = std::clamp(posX, 0.0f, 800.0f - 50.0f);
+    posY = std::clamp(posY, 0.0f, 600.0f - 50.0f);
 }
 
 void render(unsigned int shaderProgram, unsigned int VAO) {
@@ -113,6 +147,15 @@ int main() {
     
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
+//
+    float projection[16];
+    createOrtho(0.0f, 800.0f, 0.0f, 600.0f, projection);
+    
+    glUseProgram(shaderProgram);
+    
+    int projLoc = glGetUniformLocation(shaderProgram, "projection");
+    glUniformMatrix4fv(projLoc, 1, GL_FALSE, projection);
+//    
 
     unsigned int VAO, VBO;
     glGenVertexArrays(1, &VAO);
@@ -130,14 +173,17 @@ int main() {
     glBindVertexArray(0);
     
 
+
+    
+
     while (!glfwWindowShouldClose(window)) {
 	double currentTime = glfwGetTime();
 	double deltaTime = currentTime - lastTime;
 	lastTime = currentTime;
 
-	processInput(window, deltaTime);
+	processInput(window);
 
-	update();
+	update(deltaTime);
 
 	render(shaderProgram, VAO);
 
