@@ -1,5 +1,6 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <iostream>
 #include <algorithm>
 
 const char* vertexShaderSource = R"(
@@ -87,15 +88,20 @@ void processInput(GLFWwindow* window) {
 void update(double deltaTime) {
     posX += velocityX * deltaTime;
     posY += velocityY * deltaTime;
-    posX = std::clamp(posX, 0.0f, 800.0f - 50.0f);
-    posY = std::clamp(posY, 0.0f, 600.0f - 50.0f);
+    posX = std::clamp(posX, 0.0f, (float)windowWidth - 50.0f);
+    posY = std::clamp(posY, 0.0f, (float)windowHeight - 50.0f);
 }
 
 void render(unsigned int shaderProgram, unsigned int VAO) {
         glClearColor(0.1f, 0.1f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+
+	float projection[16];
+	createOrtho(0.0f, (float)windowWidth, 0.0f, (float)windowHeight, projection);
 	
 	glUseProgram(shaderProgram);
+	int projLoc = glGetUniformLocation(shaderProgram, "projection");
+	glUniformMatrix4fv(projLoc, 1, GL_FALSE, projection);
 	int offsetLoc = glGetUniformLocation(shaderProgram, "offset");
 	glUniform2f(offsetLoc, posX, posY);
 	glBindVertexArray(VAO);
