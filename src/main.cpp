@@ -1,6 +1,5 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <iostream>
 #include <algorithm>
 
 const char* vertexShaderSource = R"(
@@ -41,6 +40,8 @@ float posY = 0.0f;
 float velocityX = 0.0f;
 float velocityY = 0.0f;
 float speed = 300.0f;
+int windowWidth = 800;
+int windowHeight = 600;
 
 
 void createOrtho(float left, float right,
@@ -101,6 +102,12 @@ void render(unsigned int shaderProgram, unsigned int VAO) {
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
+void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+    windowWidth = width;
+    windowHeight = height;
+    glViewport(0,0, width, height);
+}
+
 
 int main() {
     double lastTime = glfwGetTime();
@@ -113,7 +120,8 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "2D Game", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "2D Game", NULL, NULL);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     if (!window) {
         std::cerr << "Failed to create window\n";
         glfwTerminate();
@@ -149,7 +157,7 @@ int main() {
     glDeleteShader(fragmentShader);
 //
     float projection[16];
-    createOrtho(0.0f, 800.0f, 0.0f, 600.0f, projection);
+    createOrtho(0.0f, (float)windowWidth, 0.0f, (float)windowHeight, projection);
     
     glUseProgram(shaderProgram);
     
