@@ -3,6 +3,8 @@
 #include <iostream>
 #include <algorithm>
 
+#include "GameObject.h"
+
 const char* vertexShaderSource = R"(
 #version 330 core
 layout (location = 0) in vec2 aPos;
@@ -36,11 +38,11 @@ float vertices[] = {
      0.0f,  50.0f
 };
 
-float posX = 0.0f;
-float posY = 0.0f;
-float velocityX = 0.0f;
-float velocityY = 0.0f;
-float speed = 300.0f;
+//float posX = 0.0f;
+//float posY = 0.0f;
+//float velocityX = 0.0f;
+//float velocityY = 0.0f;
+//float speed = 300.0f;
 int windowWidth = 800;
 int windowHeight = 600;
 
@@ -71,28 +73,26 @@ void createOrtho(float left, float right,
 }
 
 
-void processInput(GLFWwindow* window) {
-    velocityX = 0.0f;
-    velocityY = 0.0f;
+void processInput(GLFWwindow* window, GameObject& player) {
+    player.velocityX = 0.0f;
+    player.velocityY = 0.0f;
     //Move Rectangle
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        velocityX = -speed;
+        player.velocityX = -player.speed;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        velocityX = speed;
+        player.velocityX = player.speed;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        velocityY = speed;
+        player.velocityY = player.speed;
     if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-	    velocityY = -speed;
+	player.velocityY = -player.speed;
 }
 
-void update(double deltaTime) {
-    posX += velocityX * deltaTime;
-    posY += velocityY * deltaTime;
-    posX = std::clamp(posX, 0.0f, (float)windowWidth - 50.0f);
-    posY = std::clamp(posY, 0.0f, (float)windowHeight - 50.0f);
+void update(GameObject& player) {
+    player.x = std::clamp(player.x, 0.0f, (float)windowWidth - 50.0f);
+    player.y = std::clamp(player.y, 0.0f, (float)windowHeight - 50.0f);
 }
 
-void render(unsigned int shaderProgram, unsigned int VAO) {
+void render(unsigned int shaderProgram, unsigned int VAO, GameObject& player) {
         glClearColor(0.1f, 0.1f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -103,7 +103,7 @@ void render(unsigned int shaderProgram, unsigned int VAO) {
 	int projLoc = glGetUniformLocation(shaderProgram, "projection");
 	glUniformMatrix4fv(projLoc, 1, GL_FALSE, projection);
 	int offsetLoc = glGetUniformLocation(shaderProgram, "offset");
-	glUniform2f(offsetLoc, posX, posY);
+	glUniform2f(offsetLoc, player.x, player.y);
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 }
@@ -116,6 +116,14 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 
 
 int main() {
+    GameObject player;
+    player.x = 100.0f;
+    player.y = 100.0f;
+    player.width = 50.0f;
+    player.height = 50.0f;
+    player.speed = 300.0f;
+    player.velocityX = 0.0f;
+    player.velocityY = 0.0f;
     double lastTime = glfwGetTime();
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW\n";
@@ -195,11 +203,13 @@ int main() {
 	double deltaTime = currentTime - lastTime;
 	lastTime = currentTime;
 
-	processInput(window);
+	processInput(window, player);
+	
+	player.update(deltaTime);
 
-	update(deltaTime);
+	update(player);
 
-	render(shaderProgram, VAO);
+	render(shaderProgram, VAO, player);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

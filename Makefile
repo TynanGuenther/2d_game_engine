@@ -1,8 +1,8 @@
 CXX = g++
-CXXFLAGS = -Wall -Wextra -Iinclude
+CXXFLAGS = -Wall -Wextra -I./include
 LIBS = -lglfw -lGL -ldl
 
-SRC = src/main.cpp glad.c
+SRC = src/main.cpp src/GameObject.cpp glad.c 
 OUT = game
 
 all:
