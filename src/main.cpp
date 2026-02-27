@@ -4,6 +4,8 @@
 #include <algorithm>
 
 #include "GameObject.h"
+#include "Game.h"
+#include "Renderer.h"
 
 const char* vertexShaderSource = R"(
 #version 330 core
@@ -86,44 +88,42 @@ void processInput(GLFWwindow* window, GameObject& player) {
     if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 	player.velocityY = -player.speed;
 }
-
-void update(GameObject& player) {
-    player.x = std::clamp(player.x, 0.0f, (float)windowWidth - 50.0f);
-    player.y = std::clamp(player.y, 0.0f, (float)windowHeight - 50.0f);
-}
-
 void render(unsigned int shaderProgram, unsigned int VAO, GameObject& player) {
-        glClearColor(0.1f, 0.1f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
 
-	float projection[16];
-	createOrtho(0.0f, (float)windowWidth, 0.0f, (float)windowHeight, projection);
 	
 	glUseProgram(shaderProgram);
-	int projLoc = glGetUniformLocation(shaderProgram, "projection");
-	glUniformMatrix4fv(projLoc, 1, GL_FALSE, projection);
-	int offsetLoc = glGetUniformLocation(shaderProgram, "offset");
+
+	GLint offsetLoc = glGetUniformLocation(shaderProgram, "offset");
 	glUniform2f(offsetLoc, player.x, player.y);
+
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
+void update(GameObject& player) {
+    player.x = std::clamp(player.x, 0.0f, (float)windowWidth - player.width);
+    player.y = std::clamp(player.y, 0.0f, (float)windowHeight - player.height);
+}
+
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
-    windowWidth = width;
-    windowHeight = height;
-    glViewport(0,0, width, height);
+    glViewport(0, 0, width, height);
+
+    Game* game = static_cast<Game*>(glfwGetWindowUserPointer(window));
+    if (game)
+        game->resize(width, height);
 }
 
 
 int main() {
-    GameObject player;
-    player.x = 100.0f;
-    player.y = 100.0f;
-    player.width = 50.0f;
-    player.height = 50.0f;
-    player.speed = 300.0f;
-    player.velocityX = 0.0f;
-    player.velocityY = 0.0f;
+   // GameObject player;
+   // player.x = 100.0f;
+   // player.y = 100.0f;
+   // player.width = 50.0f;
+   // player.height = 50.0f;
+   // player.speed = 300.0f;
+   // player.velocityX = 0.0f;
+   // player.velocityY = 0.0f;
     double lastTime = glfwGetTime();
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW\n";
@@ -170,12 +170,13 @@ int main() {
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 //
+    glUseProgram(shaderProgram);
+
     float projection[16];
     createOrtho(0.0f, (float)windowWidth, 0.0f, (float)windowHeight, projection);
     
-    glUseProgram(shaderProgram);
     
-    int projLoc = glGetUniformLocation(shaderProgram, "projection");
+    GLint projLoc = glGetUniformLocation(shaderProgram, "projection");
     glUniformMatrix4fv(projLoc, 1, GL_FALSE, projection);
 //    
 
@@ -187,7 +188,19 @@ int main() {
     
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    Renderer renderer(shaderProgram, VAO);
+
+    int width, height;
+    glfwGetFramebufferSize(window, &width, &height);
+
+    renderer.resize(width, height);
     
+    Game game(width, height, renderer);
+    game.init();
+
+    glfwSetWindowUserPointer(window, &game);
+
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     
@@ -196,23 +209,41 @@ int main() {
     
 
 
-    
+ 
 
     while (!glfwWindowShouldClose(window)) {
-	double currentTime = glfwGetTime();
-	double deltaTime = currentTime - lastTime;
+	float currentTime = glfwGetTime();
+	float deltaTime = currentTime - lastTime;
 	lastTime = currentTime;
 
-	processInput(window, player);
-	
-	player.update(deltaTime);
+	game.processInput(window);
+	game.update(deltaTime);
 
-	update(player);
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
 
-	render(shaderProgram, VAO, player);
+	game.render();
 
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+	glfwSwapBuffers(window);
+	glfwPollEvents();
+
+//	double currentTime = glfwGetTime();
+//	double deltaTime = currentTime - lastTime;
+//	lastTime = currentTime;
+//
+//	processInput(window, player);
+//	
+//	player.update(deltaTime);
+//
+//        glClearColor(0.1f, 0.1f, 0.3f, 1.0f);
+//        glClear(GL_COLOR_BUFFER_BIT);
+//
+//	update(player);
+//
+//	render(shaderProgram, VAO, player);
+//
+//        glfwSwapBuffers(window);
+//        glfwPollEvents();
     }
 
     glfwDestroyWindow(window);
