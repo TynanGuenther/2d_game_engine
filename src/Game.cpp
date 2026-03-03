@@ -77,10 +77,25 @@ void Game::update(float deltaTime)
 	obj.update(deltaTime);
 
     GameObject& player = objects[0];
+
+    player.x += player.velocityX * deltaTime;
+
     for (size_t i = 1; i < objects.size(); i++) {
 	if(checkCollision(player, objects[i])) {
-	    player.x -= player.velocityX * deltaTime;
-	    player.y -= player.velocityY * deltaTime;
+	    if(player.velocityX > 0)//right
+		player.x = objects[i].x - player.width;
+	    else if (player.velocityX < 0)//left
+		player.x = objects[i].x + objects[i].width;
+	}
+    }
+    player.y += player.velocityY * deltaTime;
+
+    for (size_t i = 1; i < objects.size(); i++) {
+	if(checkCollision(player, objects[i])) {
+	    if(player.velocityY > 0)//up
+		player.y = objects[i].y - player.height;
+	    else if (player.velocityY < 0)//down
+		player.y = objects[i].y + objects[i].height;
 	}
     }
 
