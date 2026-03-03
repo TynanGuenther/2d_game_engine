@@ -2,6 +2,7 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <vector>
 #include "GameObject.h"
 
 class Renderer;
@@ -22,5 +23,5 @@ private:
 
     Renderer& renderer;
 
-    GameObject player;
+    std::vector<GameObject> objects;
 };
