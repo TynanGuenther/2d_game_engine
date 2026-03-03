@@ -45,6 +45,14 @@ void Game::init()
     }
 }
 
+static bool checkCollision(const GameObject& a, const GameObject& b){
+    bool collisionX = a.x < b.x + a.width && a.x + a.width > b.x;
+
+    bool collisionY = a.y < b.y + a.height && a.y + a.height > b.y;
+
+    return collisionX && collisionY;
+}
+
 void Game::processInput(GLFWwindow* window)
 {
     objects[0].velocityX = 0.0f;
@@ -67,6 +75,14 @@ void Game::update(float deltaTime)
 {
     for(auto& obj : objects)
 	obj.update(deltaTime);
+
+    GameObject& player = objects[0];
+    for (size_t i = 1; i < objects.size(); i++) {
+	if(checkCollision(player, objects[i])) {
+	    player.x -= player.velocityX * deltaTime;
+	    player.y -= player.velocityY * deltaTime;
+	}
+    }
 
     for(auto& obj : objects) {
 	obj.x = std::clamp(obj.x, 0.0f, (float)screenWidth - obj.width);
