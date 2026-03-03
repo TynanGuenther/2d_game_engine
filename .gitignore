@@ -43,3 +43,5 @@ game
 
 #json
 *.json
+
+.cache/*
