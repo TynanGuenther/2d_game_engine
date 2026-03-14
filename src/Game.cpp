@@ -15,15 +15,15 @@ void Game::init()
 {
     GameObject player;
 
-    player.x = 100.0f;
-    player.y = 100.0f;
-    player.width = 50.0f;
-    player.height = 50.0f;
 
-    player.velocityX = 0.0f;
-    player.velocityY = 0.0f;
-    player.speed = 300.0f;
-
+    player.transform.position = {100.0f, 100.0f};
+    player.transform.size = {50.0f, 50.0f};
+    
+    player.body.velocity = {0.0f, 0.0f};
+    player.body.speed = 300.0f;
+    
+    player.isStatic = false;
+    
     objects.push_back(player);
 
     srand(static_cast<unsigned>(time(nullptr)));
@@ -31,44 +31,47 @@ void Game::init()
     for (int i = 0; i < 10; i++) {
 	GameObject obj;
 
-	obj.x = rand() % (screenWidth - 50);
-	obj.y = rand() % (screenHeight - 50);
 
-	obj.width = 50.0f;
-	obj.height = 50.0f;
-
-	obj.velocityX = 0.0f;
-	obj.velocityY = 0.0f;
-	obj.speed = 0.0f;
+	obj.transform.position = {
+	    (float)(rand() % (screenWidth - 50)),
+	    (float)(rand() % (screenHeight - 50))
+	};
+    	
+    	obj.transform.size = {50.0f, 50.0f};
+    	
+    	obj.body.velocity = {0.0f, 0.0f};
+    	obj.body.speed = 0.0f;
+    	
+    	obj.isStatic = true;
 
 	objects.push_back(obj);
     }
 }
 
 static bool checkCollision(const GameObject& a, const GameObject& b){
-    bool collisionX = a.x < b.x + a.width && a.x + a.width > b.x;
+    bool collisionX = a.transform.position.x < b.transform.position.x + a.transform.size.x && a.transform.position.x + a.transform.size.x > b.transform.position.x;
 
-    bool collisionY = a.y < b.y + a.height && a.y + a.height > b.y;
+    bool collisionY = a.transform.position.y < b.transform.position.y + a.transform.size.y && a.transform.position.y + a.transform.size.y > b.transform.position.y;
 
     return collisionX && collisionY;
 }
 
 void Game::processInput(GLFWwindow* window)
 {
-    objects[0].velocityX = 0.0f;
-    objects[0].velocityY = 0.0f;
+    objects[0].body.velocity.x = 0.0f;
+    objects[0].body.velocity.y = 0.0f;
 
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        objects[0].velocityX = -objects[0].speed;
+        objects[0].body.velocity.x = -objects[0].body.speed;
 
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        objects[0].velocityX = objects[0].speed;
+        objects[0].body.velocity.x = objects[0].body.speed;
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        objects[0].velocityY = objects[0].speed;
+        objects[0].body.velocity.y = objects[0].body.speed;
 
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        objects[0].velocityY = -objects[0].speed;
+        objects[0].body.velocity.y = -objects[0].body.speed;
 }
 
 void Game::update(float deltaTime)
@@ -78,31 +81,31 @@ void Game::update(float deltaTime)
 
     GameObject& player = objects[0];
 
-    player.x += player.velocityX * deltaTime;
+    player.transform.position.x += player.body.velocity.x * deltaTime;
 
     for (size_t i = 1; i < objects.size(); i++) {
 	if(checkCollision(player, objects[i])) {
-	    if(player.velocityX > 0)//right
-		player.x = objects[i].x - player.width;
-	    else if (player.velocityX < 0)//left
-		player.x = objects[i].x + objects[i].width;
+	    if(player.body.velocity.x > 0)//right
+		player.transform.position.x = objects[i].transform.position.x - player.transform.size.x;
+	    else if (player.body.velocity.x < 0)//left
+		player.transform.position.x = objects[i].transform.position.x + objects[i].transform.size.x;
 	}
     }
-    player.y += player.velocityY * deltaTime;
+    player.transform.position.y += player.body.velocity.y * deltaTime;
 
     for (size_t i = 1; i < objects.size(); i++) {
 	if(checkCollision(player, objects[i])) {
-	    if(player.velocityY > 0)//up
-		player.y = objects[i].y - player.height;
-	    else if (player.velocityY < 0)//down
-		player.y = objects[i].y + objects[i].height;
+	    if(player.body.velocity.y > 0)//up
+		player.transform.position.y = objects[i].transform.position.y - player.transform.size.y;
+	    else if (player.body.velocity.y < 0)//down
+		player.transform.position.y = objects[i].transform.position.y + objects[i].transform.size.y;
 	}
     }
 
     for(auto& obj : objects) {
-	obj.x = std::clamp(obj.x, 0.0f, (float)screenWidth - obj.width);
+	obj.transform.position.x = std::clamp(obj.transform.position.x, 0.0f, (float)screenWidth - obj.transform.size.x);
 
-	obj.y = std::clamp(obj.y, 0.0f, (float)screenHeight - obj.height);
+	obj.transform.position.y = std::clamp(obj.transform.position.y, 0.0f, (float)screenHeight - obj.transform.size.y);
     }
 }
 

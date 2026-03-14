@@ -1,7 +1,8 @@
 #include "GameObject.h"
 
 void GameObject::update(float deltaTime) {
-    x += velocityX * deltaTime;
-    y += velocityY * deltaTime;
+    if (isStatic) return;
+    transform.position.x += body.velocity.x * deltaTime;
+    transform.position.y += body.velocity.y * deltaTime;
 }
 

@@ -13,7 +13,7 @@ Renderer::Renderer(GLuint shaderProgram, GLuint VAO)
 void Renderer::draw(const GameObject& obj)
 {
     glUseProgram(shaderProgram);
-    glUniform2f(offsetLocation, obj.x, obj.y);
+    glUniform2f(offsetLocation, obj.transform.position.x, obj.transform.position.y);
 
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);

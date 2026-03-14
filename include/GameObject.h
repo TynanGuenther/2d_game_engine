@@ -1,14 +1,16 @@
 #pragma once
 
-struct GameObject {
-    float x;
-    float y;
-    float width;
-    float height;
+#include "Transform.h"
+#include "RigidBody.h"
 
-    float velocityX;
-    float velocityY;
-    float speed;
+class GameObject {
+    public:
 
-    void update(float deltaTime);
+	Transform transform;
+	RigidBody body;
+
+	bool isStatic = false;
+
+	void update(float deltaTime);
 };
+
