@@ -23,3 +23,11 @@ void Scene::cleanup() {
 	    objects.end()
     );
 }
+
+GameObject* Scene::findByTag(Tag tag) {
+    for (auto& obj : objects) {
+	if (obj.tag == tag)
+	    return &obj;
+    }
+    return nullptr;
+}

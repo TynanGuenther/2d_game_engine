@@ -16,31 +16,27 @@ void Game::init()
     GameObject& player = scene.createObject();
 
 
+    player.tag = Tag::Player;
     player.transform.position = {100.0f, 100.0f};
     player.transform.size = {50.0f, 50.0f};
-    
     player.body.velocity = {0.0f, 0.0f};
     player.body.speed = 300.0f;
-    
     player.isStatic = false;
-    
 
     srand(static_cast<unsigned>(time(nullptr)));
 
     for (int i = 0; i < 10; i++) {
 	GameObject obj = scene.createObject();
 
-
+	obj.tag = Tag::Wall;
 	obj.transform.position = {
 	    (float)(rand() % (screenWidth - 50)),
 	    (float)(rand() % (screenHeight - 50))
 	};
     	
     	obj.transform.size = {50.0f, 50.0f};
-    	
     	obj.body.velocity = {0.0f, 0.0f};
     	obj.body.speed = 0.0f;
-    	
     	obj.isStatic = true;
     }
 }
@@ -55,20 +51,25 @@ static bool checkCollision(const GameObject& a, const GameObject& b){
 
 void Game::processInput(GLFWwindow* window)
 {
-    scene.objects[0].body.velocity.x = 0.0f;
-    scene.objects[0].body.velocity.y = 0.0f;
+    GameObject* player = scene.findByTag(Tag::Player);
+    
+    if(!player)
+	return;
+
+    player->body.velocity.x = 0.0f;
+    player->body.velocity.y = 0.0f;
 
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        scene.objects[0].body.velocity.x = -scene.objects[0].body.speed;
+        player->body.velocity.x = -scene.objects[0].body.speed;
 
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        scene.objects[0].body.velocity.x = scene.objects[0].body.speed;
+        player->body.velocity.x = scene.objects[0].body.speed;
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        scene.objects[0].body.velocity.y = scene.objects[0].body.speed;
+        player->body.velocity.y = scene.objects[0].body.speed;
 
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        scene.objects[0].body.velocity.y = -scene.objects[0].body.speed;
+        player->body.velocity.y = -scene.objects[0].body.speed;
 }
 
 void Game::update(float deltaTime)
