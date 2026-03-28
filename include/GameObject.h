@@ -10,6 +10,7 @@ class GameObject {
 	RigidBody body;
 
 	bool isStatic = false;
+	bool isAlive = true;
 
 	void update(float deltaTime);
 };

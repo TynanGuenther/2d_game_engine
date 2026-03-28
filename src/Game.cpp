@@ -13,7 +13,7 @@ Game::Game(int width, int height, Renderer& renderer)
 
 void Game::init()
 {
-    GameObject player;
+    GameObject& player = scene.createObject();
 
 
     player.transform.position = {100.0f, 100.0f};
@@ -24,12 +24,11 @@ void Game::init()
     
     player.isStatic = false;
     
-    scene.objects.push_back(player);
 
     srand(static_cast<unsigned>(time(nullptr)));
 
     for (int i = 0; i < 10; i++) {
-	GameObject obj;
+	GameObject obj = scene.createObject();
 
 
 	obj.transform.position = {
@@ -43,8 +42,6 @@ void Game::init()
     	obj.body.speed = 0.0f;
     	
     	obj.isStatic = true;
-
-	scene.objects.push_back(obj);
     }
 }
 
