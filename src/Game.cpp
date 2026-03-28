@@ -1,9 +1,12 @@
 #include "Game.h"
 #include "GameObject.h"
 #include "Renderer.h"
+#include "CollisionSystem.h"
 #include <algorithm>
 #include <cstdlib>
 #include <ctime>
+
+CollisionSystem collisionSystem;
 
 Game::Game(int width, int height, Renderer& renderer)
     : screenWidth(width),
@@ -14,8 +17,7 @@ Game::Game(int width, int height, Renderer& renderer)
 void Game::init()
 {
     GameObject& player = scene.createObject();
-
-
+    
     player.tag = Tag::Player;
     player.transform.position = {100.0f, 100.0f};
     player.transform.size = {50.0f, 50.0f};
@@ -39,14 +41,6 @@ void Game::init()
     	obj.body.speed = 0.0f;
     	obj.isStatic = true;
     }
-}
-
-static bool checkCollision(const GameObject& a, const GameObject& b){
-    bool collisionX = a.transform.position.x < b.transform.position.x + a.transform.size.x && a.transform.position.x + a.transform.size.x > b.transform.position.x;
-
-    bool collisionY = a.transform.position.y < b.transform.position.y + a.transform.size.y && a.transform.position.y + a.transform.size.y > b.transform.position.y;
-
-    return collisionX && collisionY;
 }
 
 void Game::processInput(GLFWwindow* window)
@@ -74,32 +68,8 @@ void Game::processInput(GLFWwindow* window)
 
 void Game::update(float deltaTime)
 {
-    for(auto& obj : scene.objects)
-	obj.update(deltaTime);
-
-    GameObject& player = scene.objects[0];
-
-    player.transform.position.x += player.body.velocity.x * deltaTime;
-
-    for (size_t i = 1; i < scene.objects.size(); i++) {
-	if(checkCollision(player, scene.objects[i])) {
-	    if(player.body.velocity.x > 0)//right
-		player.transform.position.x = scene.objects[i].transform.position.x - player.transform.size.x;
-	    else if (player.body.velocity.x < 0)//left
-		player.transform.position.x = scene.objects[i].transform.position.x + scene.objects[i].transform.size.x;
-	}
-    }
-    player.transform.position.y += player.body.velocity.y * deltaTime;
-
-    for (size_t i = 1; i < scene.objects.size(); i++) {
-	if(checkCollision(player, scene.objects[i])) {
-	    if(player.body.velocity.y > 0)//up
-		player.transform.position.y = scene.objects[i].transform.position.y - player.transform.size.y;
-	    else if (player.body.velocity.y < 0)//down
-		player.transform.position.y = scene.objects[i].transform.position.y + scene.objects[i].transform.size.y;
-	}
-    }
-
+    scene.update(deltaTime);
+    collisionSystem.checkCollisions(scene);
     for(auto& obj : scene.objects) {
 	obj.transform.position.x = std::clamp(obj.transform.position.x, 0.0f, (float)screenWidth - obj.transform.size.x);
 
