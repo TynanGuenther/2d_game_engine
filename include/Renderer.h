@@ -14,5 +14,6 @@ private:
     GLuint shaderProgram;
     GLuint VAO;
     GLint offsetLocation;
+    GLint sizeLocation;
     GLint projectionLocation;
 };

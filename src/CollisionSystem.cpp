@@ -24,21 +24,31 @@ void CollisionSystem::resolveCollision(GameObject& a, GameObject& b) {
     float bw = b.transform.size.x;
     float bh = b.transform.size.y;
 
-    float overlapX = (ax + aw / 2) - (bx + bw / 2);
-    float overlapY = (ay + ah / 2) - (by + bh / 2);
+    float overlapX1 = (ax + aw) - bx;
+    float overlapX2 = (bx + bw) - ax;
+    float overlapY1 = (ay + ah) - by;
+    float overlapY2 = (by + bh) - ay;
 
-    if (std::abs(overlapX) > std::abs(overlapY)) {
-	if (overlapX > 0)
-	    a.transform.position.x = bx + bw;
-	else
-	    a.transform.position.x = bx - aw;
-	a.body.velocity.x = 0;
-    } else {
-	if (overlapY > 0) 
-	    a.transform.position.y = by + bh;
-	else
-	    a.transform.position.y = by - ah;
-	a.body.velocity.y = 0;
+    float overlapX = std::min(overlapX1, overlapX2);
+    float overlapY = std::min(overlapY1, overlapY2);
+
+    if (overlapX < overlapY)
+    {
+        if (overlapX1 < overlapX2)
+            a.transform.position.x -= overlapX1;
+        else
+            a.transform.position.x += overlapX2;
+
+        a.body.velocity.x = 0;
+    }
+    else
+    {
+        if (overlapY1 < overlapY2)
+            a.transform.position.y -= overlapY1;
+        else
+            a.transform.position.y += overlapY2;
+
+        a.body.velocity.y = 0;
     }
 }
 

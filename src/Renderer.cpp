@@ -7,13 +7,21 @@ Renderer::Renderer(GLuint shaderProgram, GLuint VAO)
     : shaderProgram(shaderProgram), VAO(VAO)
 {
     offsetLocation = glGetUniformLocation(shaderProgram, "offset");
+    sizeLocation   = glGetUniformLocation(shaderProgram, "size");
     projectionLocation = glGetUniformLocation(shaderProgram, "projection");
 }
 
 void Renderer::draw(const GameObject& obj)
 {
     glUseProgram(shaderProgram);
-    glUniform2f(offsetLocation, obj.transform.position.x, obj.transform.position.y);
+
+    glUniform2f(offsetLocation,
+        obj.transform.position.x,
+        obj.transform.position.y);
+
+    glUniform2f(sizeLocation,
+        obj.transform.size.x / 50.0f,
+        obj.transform.size.y / 50.0f);
 
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);

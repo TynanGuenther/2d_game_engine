@@ -1,5 +1,10 @@
+#include <algorithm>
 #include "Scene.h"
 #include "GameObject.h"
+
+Scene::Scene() {
+    objects.reserve(1000);
+}
 
 GameObject& Scene::createObject() {
     objects.emplace_back();

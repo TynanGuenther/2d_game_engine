@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <ctime>
+#include <iostream>
 
 CollisionSystem collisionSystem;
 
@@ -21,15 +22,13 @@ void Game::init()
     player.tag = Tag::Player;
     player.transform.position = {100.0f, 100.0f};
     player.transform.size = {50.0f, 50.0f};
-    player.body.velocity = {0.0f, 0.0f};
     player.body.speed = 300.0f;
     player.isStatic = false;
 
     srand(static_cast<unsigned>(time(nullptr)));
 
     for (int i = 0; i < 10; i++) {
-	GameObject obj = scene.createObject();
-
+	GameObject& obj = scene.createObject();
 	obj.tag = Tag::Wall;
 	obj.transform.position = {
 	    (float)(rand() % (screenWidth - 50)),
@@ -37,10 +36,34 @@ void Game::init()
 	};
     	
     	obj.transform.size = {50.0f, 50.0f};
-    	obj.body.velocity = {0.0f, 0.0f};
-    	obj.body.speed = 0.0f;
     	obj.isStatic = true;
+	obj.isAlive = true;
     }
+        // Borders
+    GameObject& leftWall = scene.createObject();
+    leftWall.tag = Tag::Wall;
+    leftWall.transform.position = {0, 0};
+    leftWall.transform.size = {0, (float)screenHeight};
+    leftWall.isStatic = true;
+
+    GameObject& rightWall = scene.createObject();
+    rightWall.tag = Tag::Wall;
+    rightWall.transform.position = {(float)screenWidth, 0};
+    rightWall.transform.size = {0, (float)screenHeight};
+    rightWall.isStatic = true;
+
+    GameObject& topWall = scene.createObject();
+    topWall.tag = Tag::Wall;
+    topWall.transform.position = {0, (float)screenHeight};
+    topWall.transform.size = {(float)screenWidth, 0};
+    topWall.isStatic = true;
+
+    GameObject& bottomWall = scene.createObject();
+    bottomWall.tag = Tag::Wall;
+    bottomWall.transform.position = {0, 0};
+    bottomWall.transform.size = {(float)screenWidth, 0};
+    bottomWall.isStatic = true;
+
 }
 
 void Game::processInput(GLFWwindow* window)
@@ -70,17 +93,14 @@ void Game::update(float deltaTime)
 {
     scene.update(deltaTime);
     collisionSystem.checkCollisions(scene);
-    for(auto& obj : scene.objects) {
-	obj.transform.position.x = std::clamp(obj.transform.position.x, 0.0f, (float)screenWidth - obj.transform.size.x);
-
-	obj.transform.position.y = std::clamp(obj.transform.position.y, 0.0f, (float)screenHeight - obj.transform.size.y);
-    }
 }
 
 void Game::render()
 {
     for (const auto& obj : scene.objects)
+    {
 	renderer.draw(obj);
+    }
 }
 
 void Game::resize(int width, int height)

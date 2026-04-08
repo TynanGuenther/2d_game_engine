@@ -10,10 +10,11 @@ const char* vertexShaderSource = R"(
 layout (location = 0) in vec2 aPos;
 
 uniform vec2 offset;
+uniform vec2 size;
 uniform mat4 projection;
 
 void main() {
-    vec2 worldPos = aPos + offset;
+    vec2 worldPos = aPos * size + offset;
     gl_Position = projection * vec4(worldPos, 0.0, 1.0);
 }
 )";

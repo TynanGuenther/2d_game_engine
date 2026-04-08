@@ -1,10 +1,10 @@
 #pragma once
 #include <vector>
-#include <algorithm>
 #include "GameObject.h"
 
 class Scene {
     public:
+	Scene();
 	std::vector<GameObject> objects;
 	
 	GameObject& createObject();
